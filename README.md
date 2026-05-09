@@ -339,7 +339,7 @@ Every IP and hostname is replaced with a stable, category-based label derived fr
 | 192.168.1.248    | WORKSTATION-001 |
 | Gabes-PC         | WORKSTATION-001 |
 | 192.168.1.1      | ROUTER-001      |
-| RT-AC5300-52C0   | ROUTER-001      |
+| ASUS-Router      | ROUTER-001      |
 | 192.168.1.28     | IOT-001         |
 | ESP_062EF5       | IOT-001         |
 
