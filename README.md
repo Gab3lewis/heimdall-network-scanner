@@ -95,25 +95,25 @@ Most scanners produce long lists of alerts without explaining why something was 
 ## How it works
 
 ```
-Host Discovery                          : ICMP + TCP probes
+Host Discovery                        : ICMP + TCP probes
     ↓
-Port Scanning                             : TCP connect with configurable port lists
+Port Scanning                         : TCP connect with configurable port lists
     ↓
 Banner Grabbing                       : Protocol-aware service detection
     ↓
-Service Fingerprinting    : Version extraction and confidence assignment
+Service Fingerprinting                : Version extraction and confidence assignment
     ↓
-Asset Enrichment                    : rDNS, NetBIOS, mDNS, OUI, HTTP title, TLS cert
+Asset Enrichment                      : rDNS, NetBIOS, mDNS, OUI, HTTP title, TLS cert
     ↓
-OS Fingerprinting                 : TTL, SSH banner, port combinations
+OS Fingerprinting                     : TTL, SSH banner, port combinations
     ↓
-Security Checks                      : SMB, Redis, FTP, VNC, HTTP header analysis
+Security Checks                       : SMB, Redis, FTP, VNC, HTTP header analysis
     ↓
-CVE Lookup                                   : NVD API using banner-confirmed versions only
+CVE Lookup                            : NVD API using banner-confirmed versions only
     ↓
-Risk Scoring                             : Context-aware composite scoring
+Risk Scoring                          : Context-aware composite scoring
     ↓
-Findings & Priorities      : Ranked and evidence-backed findings
+Findings & Priorities                 : Ranked and evidence-backed findings
     ↓
 HTML / JSON Report
 ```
