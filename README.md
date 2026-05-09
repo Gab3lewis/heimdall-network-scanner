@@ -5,7 +5,7 @@
 ![Tests](https://img.shields.io/badge/tests-97%20passing-brightgreen)
 ![Dependencies](https://img.shields.io/badge/dependencies-none-lightgrey)
 
-Heimdall is a Python-based network scanner built for home labs and small networks. It performs host discovery, port scanning, service fingerprinting, asset enrichment, CVE matching, and risk scoring — then produces clean HTML and JSON reports.
+Heimdall is a Python-based network scanner built for home labs and small networks. It performs host discovery, port scanning, service fingerprinting, asset enrichment, CVE matching, and risk scoring. Reports are produced in HTML and JSON.
 
 The design goal was to build something that explains its findings rather than just listing them. Every result includes confidence levels, evidence sources, and the reasoning behind the risk score.
 
@@ -17,11 +17,11 @@ The design goal was to build something that explains its findings rather than ju
 
 Most scanners produce long lists of alerts without explaining why something was flagged or how confident the detection actually is. Heimdall takes a different approach:
 
-- **CVEs are only assigned when product and version are both confirmed from the service banner** — not from keyword searches that return hundreds of loosely-related results
-- **Confidence is explicit** — every service fingerprint and device identification includes its evidence source and certainty tier
-- **Heuristic observations are labeled as such** — port 50000 shows as `Possible IBM-DB2-like service`, not `IBM-DB2`
-- **Risk scores reflect context** — an internal SSH server with outdated software scores differently than an externally-routable one with no authentication
-- **Findings are prioritized for action**, not volume — the goal is fewer, higher-quality findings you can actually act on
+- **CVEs are only assigned when product and version are both confirmed from the service banner.** Keyword searches that return hundreds of loosely-related results are not used.
+- **Confidence is explicit.** Every service fingerprint and device identification includes its evidence source and certainty tier.
+- **Heuristic observations are labeled clearly.** For example, port 50000 shows as `Possible IBM-DB2-like service`, not `IBM-DB2`.
+- **Risk scores reflect context.** An internal SSH server with outdated software scores differently than an externally-routable one with no authentication.
+- **Findings are prioritized for action, not volume.** The goal is fewer, higher-quality findings you can actually act on.
 
 *Design philosophy: favor explainability and evidence quality over maximizing finding count.*
 
@@ -58,7 +58,7 @@ Most scanners produce long lists of alerts without explaining why something was 
 **Service fingerprinting**
 - Extracts product name and version from banners using service-specific patterns
 - Three confidence tiers: `high` (version confirmed from banner), `medium` (well-known IANA port), `low` (port-convention heuristic)
-- Heuristic fingerprints are labeled — `Possible IBM-DB2-like service`, not `IBM-DB2`
+- Heuristic fingerprints are labeled clearly: `Possible IBM-DB2-like service`, not `IBM-DB2`
 
 **Asset enrichment**
 - Multi-source device identification: reverse DNS, NetBIOS (UDP 137), mDNS (port 5353), HTTP page title, TLS certificate CN/SAN, MAC vendor OUI
@@ -67,7 +67,7 @@ Most scanners produce long lists of alerts without explaining why something was 
 
 **CVE matching**
 - Queries NIST NVD API 2.0 using banner-confirmed product and version fingerprints
-- Only fires when both product and version are confirmed — version-unknown services are skipped and reported
+- Only fires when both product and version are confirmed. Version-unknown services are skipped and reported.
 - Year filter (default: 2017+) and product relevance check applied; all skipped results are counted and disclosed
 
 **Active security checks**
@@ -95,25 +95,25 @@ Most scanners produce long lists of alerts without explaining why something was 
 ## How it works
 
 ```
-Host Discovery       — ICMP + TCP probes
+Host Discovery                          : ICMP + TCP probes
     ↓
-Port Scanning        — TCP connect, configurable port list
+Port Scanning                             : TCP connect with configurable port lists
     ↓
-Banner Grabbing      — Protocol-aware, per-service patterns
+Banner Grabbing                       : Protocol-aware service detection
     ↓
-Service Fingerprinting — Version extraction, confidence assignment
+Service Fingerprinting    : Version extraction and confidence assignment
     ↓
-Asset Enrichment     — rDNS, NetBIOS, mDNS, OUI, HTTP title, TLS cert
+Asset Enrichment                    : rDNS, NetBIOS, mDNS, OUI, HTTP title, TLS cert
     ↓
-OS Fingerprinting    — TTL, SSH banner, port combinations
+OS Fingerprinting                 : TTL, SSH banner, port combinations
     ↓
-Security Checks      — SMB, Redis, FTP, VNC, HTTP headers...
+Security Checks                      : SMB, Redis, FTP, VNC, HTTP header analysis
     ↓
-CVE Lookup           — NVD API, banner-confirmed only
+CVE Lookup                                   : NVD API using banner-confirmed versions only
     ↓
-Risk Scoring         — Composite score with context adjustment
+Risk Scoring                             : Context-aware composite scoring
     ↓
-Findings & Priorities — Deduplicated, ranked, evidence-backed
+Findings & Priorities      : Ranked and evidence-backed findings
     ↓
 HTML / JSON Report
 ```
@@ -124,7 +124,7 @@ All enrichment probes run concurrently with short timeouts. A typical /24 home n
 
 ## CVE matching methodology
 
-Most tools send a product name to a vulnerability database and return every CVE that mentions it — including results for other products, unrelated packages, and kernel patches. The list looks thorough; most of it doesn't apply.
+Many scanners query vulnerability databases using only a product name. That often returns unrelated packages, kernel references, or results that cannot be verified against the observed service.
 
 Heimdall only queries NVD after confirming a specific product and version from the service banner. If a host returns:
 
@@ -134,8 +134,8 @@ SSH-2.0-OpenSSH_7.9
 
 Heimdall queries NVD for `OpenSSH 7.9` specifically, then applies two additional filters:
 
-- **Publication year** — default 2017+, configurable with `--cve-since`
-- **Product relevance** — the CVE description must reference the product name; CRITICAL-rated CVEs bypass this filter
+- **Publication year:** default 2017+, configurable with `--cve-since`
+- **Product relevance:** the CVE description must reference the product name; CRITICAL-rated CVEs bypass this filter
 
 If the version isn't present in the banner, CVE matching is skipped:
 
@@ -143,7 +143,7 @@ If the version isn't present in the banner, CVE matching is skipped:
 [CVE] 50000: version unconfirmed — skipped
 ```
 
-This produces fewer matches, but every match is directly tied to what was observed on the network.
+This approach produces fewer matches, but each result is tied directly to observed network evidence.
 
 **Confidence levels** are carried through the full report:
 
@@ -180,15 +180,14 @@ score = base_port_risk
 
 An internal service with CVE matches but no confirmed authentication failure and no critical CVE (CVSS ≥9.0) is capped at MEDIUM (score ≤49).
 
-The reasoning: an SSH server running outdated OpenSSH on a home network is worth fixing, but it represents a different exposure level than a Redis instance accessible without credentials or a service reachable from outside the LAN. Scoring them the same would inflate results without adding signal.
+For example, an internal SSH server running an outdated version of OpenSSH represents a different level of exposure than a Redis instance accessible without authentication or a service reachable from outside the LAN. Treating them identically would inflate risk scores without improving accuracy.
 
-The remediation priority engine scores independently, so capped findings still appear near the top of the priority list. The severity label changes; the urgency does not.
-
+The remediation priority engine scores independently, so capped findings can still appear near the top of the remediation list. The severity label may change, but the finding is still surfaced for review.
 ---
 
 ## Installation
 
-No external libraries required — standard library only.
+No external libraries required. Uses Python's standard library only.
 
 ```bash
 git clone https://github.com/Gab3lewis/heimdall-network-scanner.git
@@ -199,7 +198,7 @@ python scanner.py --help
 **Requirements:**
 - Python 3.8+
 - Windows, Linux, or macOS
-- NVD API key (optional, free at [nvd.nist.gov](https://nvd.nist.gov/developers/request-an-api-key)) — increases CVE lookup rate limits
+- NVD API key (optional, free at [nvd.nist.gov](https://nvd.nist.gov/developers/request-an-api-key)): increases CVE lookup rate limits
 
 ---
 
@@ -344,7 +343,7 @@ Every IP and hostname is replaced with a stable, category-based label derived fr
 | 192.168.1.28     | IOT-001         |
 | ESP_062EF5       | IOT-001         |
 
-Labels are consistent across every report section — `LINUX-001` in the Asset Inventory refers to the same host in Findings, Remediation Priorities, Attack Surface, and the executive summary.
+Labels are consistent across every report section. `LINUX-001` in the Asset Inventory refers to the same host in Findings, Remediation Priorities, Attack Surface, and the executive summary.
 
 Preserved (not redacted): port numbers, service names, CVE IDs, CVSS scores, risk levels, device type descriptions, and recommendations.
 
@@ -414,7 +413,7 @@ heimdall-network-scanner/
 └── README.md
 ```
 
-A future refactor could split this into modules (`discovery`, `ports`, `banners`, `enrichment`, `cves`, `risk`, `findings`, `reporting`), but the single-file layout makes it straightforward to run, audit, and share.
+The project currently uses a single-file layout for simplicity and portability. A future refactor may separate discovery, enrichment, CVE matching, risk scoring, and reporting into dedicated modules.
 
 ---
 
@@ -434,7 +433,7 @@ python -m pytest tests/ -v
 
 ## Limitations
 
-- **CVE matching is conservative by design.** If a service doesn't expose version information in its banner, no CVEs are assigned — even if the underlying software is outdated. The alternative is a long list of results that can't be meaningfully verified.
+- **CVE matching is conservative by design.** If a service doesn't expose version information in its banner, no CVEs are assigned, even if the underlying software is outdated. The alternative is a long list of results that can't be meaningfully verified.
 
 - **Hostname detection depends on available signals.** Reverse DNS, NetBIOS, and mDNS are passive queries. If a device doesn't respond to any of them, it's listed as `Unknown` rather than guessed from port patterns alone.
 
@@ -442,9 +441,9 @@ python -m pytest tests/ -v
 
 - **Active security checks send real packets.** Probes for Redis, SMB negotiation, FTP anonymous login, and similar checks generate actual traffic. This is expected for a security assessment tool, but worth noting on monitored networks.
 
-- **Risk scores are relative indicators, not verdicts.** A score of 49 (MEDIUM) means there are observations worth reviewing — not that the host will be compromised. Manual verification before remediation is always recommended.
+- **Risk scores are relative indicators, not verdicts.** A score of 49 (MEDIUM) means there are observations worth reviewing, not that the host will be compromised. Manual verification before remediation is always recommended.
 
-- **This is not a replacement for Nmap, Nessus, or OpenVAS.** It was built for home lab visibility and to demonstrate security engineering concepts. For professional assessments, use purpose-built tools with maintained vulnerability databases.
+- **This project was built for home lab visibility, small-network assessment, and security engineering practice. Professional environments should still rely on established assessment platforms and continuously maintained vulnerability feeds.
 
 ---
 
@@ -475,4 +474,4 @@ The author is not responsible for misuse.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
