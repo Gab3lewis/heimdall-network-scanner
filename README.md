@@ -391,9 +391,21 @@ Preserved (not redacted): port numbers, service names, CVE IDs, CVSS scores, ris
 
 ## Screenshots
 
-Screenshots are in the [`screenshots/`](screenshots/) folder.
+### Executive summary
 
-*Run the scanner with `--redact` and add your own.*
+![Executive Summary](screenshots/ExecSummary.png)
+
+### Findings and asset inventory
+
+![Findings and Asset Inventory](screenshots/Findings_AssetInventory.png)
+
+### Attack surface
+
+![Attack Surface](screenshots/AttackSurface.png)
+
+### Detailed evidence
+
+![Detailed Evidence](screenshots/DetailedExample.png)
 
 ---
 
