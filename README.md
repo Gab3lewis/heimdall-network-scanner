@@ -443,7 +443,7 @@ python -m pytest tests/ -v
 
 - **Risk scores are relative indicators, not verdicts.** A score of 49 (MEDIUM) means there are observations worth reviewing, not that the host will be compromised. Manual verification before remediation is always recommended.
 
-- - **This project was built for home lab visibility, small-network assessment, and security engineering practice.** Professional environments should still rely on established assessment platforms and continuously maintained vulnerability feeds.
+- **This project was built for home lab visibility, small-network assessment, and security engineering practice.** Professional environments should still rely on established assessment platforms and continuously maintained vulnerability feeds.
 
 ---
 
